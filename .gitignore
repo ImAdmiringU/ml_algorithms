@@ -1,0 +1,5 @@
+__pycache__/
+venv/
+bad_tries/
+data_sets/
+*.pyc
