@@ -2,12 +2,12 @@ import base
 import numpy as np
 import pandas as pd
 
-class DecisionTreeClassifier:
+class BaseDecisionTree:
     def __init__(self,
-                 criterion: str = 'entropy',
-                 max_depth: int = 5,
-                 min_samples_split: int = 2,
-                 min_samples_leaf: int = 1):
+                 criterion: str,
+                 max_depth: int,
+                 min_samples_split: int,
+                 min_samples_leaf: int):
         
         '''
         Инициализация гиперпараметров
@@ -23,9 +23,9 @@ class DecisionTreeClassifier:
         self.feature_index: int = None
         self.threshold: float = None
         self.impurity: float = None
-        self.node_class: any = None
-        self.left_node: DecisionTreeClassifier = None
-        self.right_node: DecisionTreeClassifier = None
+        self.value: any = None
+        self.left_node: DecisionTreeClassifier | DecisionTreeRegressor = None
+        self.right_node: DecisionTreeClassifier | DecisionTreeRegressor = None
 
     @property
     def is_leaf(self) -> bool:
@@ -37,7 +37,7 @@ class DecisionTreeClassifier:
         '''
         return True if (self.left_node is None and self.right_node is None) else False
 
-    def fit(self, X, y) -> None:
+    def fit(self, X: pd.DataFrame, y: pd.Series) -> None:
         '''
         Точка входа для обучения дерева
 
@@ -46,13 +46,13 @@ class DecisionTreeClassifier:
         X : pd.DataFrame
             Обработанный датафрейм c векторами
             экземпляров объектов для обучения
-        y : pd.DataFrame
+        y : pd.Series
             Таргет. Целевое значение класса
             для каждого вектора в X
         '''
         self._fit(X, y)
 
-    def _fit(self, X, y) -> None:
+    def _fit(self, X: pd.DataFrame, y: pd.Series) -> None:
         '''
         Метод для рекурсивного обучения дерева
 
@@ -61,13 +61,13 @@ class DecisionTreeClassifier:
         X : pd.DataFrame
             Обработанный датафрейм c векторами
             экземпляров объектов для обучения
-        y : pd.DataFrame
+        y : pd.Series
             Таргет. Целевое значение класса
             для каждого вектора в X
         '''
         
-        self.impurity = base.entropy(y_data=y.values)
-        self.node_class = self._leaf_value(y=y.values)
+        self.impurity = self._initial_impurity(y_data=y.values)
+        self.value = self._leaf_value(y=y.values)
 
         # Если глубина >= 0 и длина X >= минимального количества
         # сэмплов для сплита и энтропия >= 0, тогда
@@ -87,14 +87,20 @@ class DecisionTreeClassifier:
             right_split = (X[~mask], y[~mask]) # значения больше threshold
 
             if len(left_split[0]) >= self.min_samples_leaf:
-                self.left_node = DecisionTreeClassifier(max_depth=self.max_depth - 1)
+                self.left_node = self.__class__(max_depth=self.max_depth - 1)
                 self.left_node._fit(*left_split)
 
             if len(right_split[0]) >= self.min_samples_leaf:
-                self.right_node = DecisionTreeClassifier(max_depth=self.max_depth - 1)
+                self.right_node = self.__class__(max_depth=self.max_depth - 1)
                 self.right_node._fit(*right_split)
 
-    def _find_best_split(self, X, y) -> tuple[int, float]:
+    def _initial_impurity(self, y: np.array) -> float:
+        raise NotImplementedError()
+    
+    def _leaf_value(self, y: np.array) -> int | float:
+        raise NotImplementedError()
+
+    def _find_best_split(self, X: pd.DataFrame, y: pd.Series) -> tuple[int, float]:
         '''
         Нахождение наилучшего сплита
 
@@ -103,7 +109,7 @@ class DecisionTreeClassifier:
         X : pd.DataFrame
             Обработанный датафрейм c векторами
             экземпляров объектов для обучения
-        y : pd.DataFrame
+        y : pd.Series
             Таргет. Целевое значение класса
             для каждого вектора в X
 
@@ -194,37 +200,7 @@ class DecisionTreeClassifier:
         return res[-1][:2]
         
     def _calculate_impurity(self, y_left, y_right):
-        match self.criterion:
-            case 'entropy':
-                return base.information_gain(self.impurity,
-                                             y_left,
-                                             y_right)
-            case 'gini':
-                pass
-            case 'variance':
-                pass
-
-    def _leaf_value(self, y) -> int | float:
-        '''
-        Определение класса объекта в узле
-        и присвоение этого значения
-        атрибуту объекта
-
-        Параметры
-        ---------
-        y : np.array
-            Таргет. Целевое значение класса
-            для каждого вектора в X
-        '''
-        match self.criterion:
-            case 'entropy' | 'gini':
-                # Используя метод np.bincount() подсчитываем вхождения
-                # через метод argmax() берем наиболее частый класс (индекс)
-                temp_class = np.bincount(y).argmax()
-
-                return temp_class
-            case 'variance':
-                return None
+        raise NotImplementedError()
 
     def predict(self, X) -> np.array:
         '''
@@ -251,11 +227,11 @@ class DecisionTreeClassifier:
         # С помощью цикла проходимся по всем векторам X
         # и определяем для каждого класс, сохраняя в вектор res
         for i in range(len(res)):
-            res[i] = self._predict(X.iloc[i, :])
+            res[i] = self._predict_row(X.iloc[i, :])
         
         return res
 
-    def _predict(self, X) -> int:
+    def _predict_row(self, X) -> int:
         '''
         Возвращает класс для
         соответствующего вектора
@@ -274,13 +250,66 @@ class DecisionTreeClassifier:
         '''
 
         if self.is_leaf:
-            return self.node_class
+            return self.value
         else:
             # X - это pd.Series из одного вектора
             # поэтому используем такой вид среза.
             # В данном случае фичи располагаются
             # как индексы
             if X.iloc[self.feature_index] < self.threshold:
-                return self.left_node._predict(X=X)
+                return self.left_node._predict_row(X=X)
             else:
-                return self.right_node._predict(X=X)
+                return self.right_node._predict_row(X=X)
+
+
+class DecisionTreeClassifier(BaseDecisionTree):
+    def __init__(self,
+                 criterion: str = 'entropy',
+                 max_depth: int = 5,
+                 min_samples_split: int = 2,
+                 min_samples_leaf: int = 1):
+        super().__init__(criterion, max_depth, min_samples_split, min_samples_leaf)
+
+    def _initial_impurity(self, y: np.array):
+        match self.criterion:
+            case 'entropy':
+                return base.entropy(y=y)
+            case 'gini':
+                return base.gini(y=y)
+    
+    def _leaf_value(self, y: np.array) -> int:
+        '''
+        Определение класса объекта в узле
+        и присвоение этого значения
+        атрибуту объекта
+
+        Параметры
+        ---------
+        y : np.array
+            Таргет. Целевое значение класса
+            для каждого вектора в X
+        '''
+
+        # Используя метод np.bincount() подсчитываем вхождения
+        # через метод argmax() берем наиболее частый класс (индекс)
+        temp_class = np.bincount(y).argmax()
+
+        return temp_class
+    
+    def _calculate_impurity(self, y_left, y_right):
+        match self.criterion:
+            case 'entropy':
+                return base.information_gain(self.impurity,
+                                             y_left,
+                                             y_right)
+            case 'gini':
+                pass
+
+
+class DecisionTreeRegressor(BaseDecisionTree):
+    def __init__(self,
+                 criterion: str = 'mse',
+                 max_depth: int = 5,
+                 min_samples_split: int = 2,
+                 min_samples_leaf: int = 1):
+        super().__init__(criterion, max_depth, min_samples_split, min_samples_leaf)

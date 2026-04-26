@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-class StandartScaler:
+class StandardScaler:
     def __init__(self):
         '''
         Атрибуты объекта:
