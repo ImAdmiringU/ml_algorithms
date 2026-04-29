@@ -16,7 +16,7 @@ def entropy(y: np.array) -> float:
         Энтропия в текущем узле    
     '''
 
-    res = -np.sum([(i / len(y)) * np.log2(i / len(y)) for i in np.bincount(y) if i != 0])
+    res = -np.sum([(i / len(y)) * np.log2(i / len(y)) for i in np.bincount(y.astype(int)) if i != 0])
 
     return res
 

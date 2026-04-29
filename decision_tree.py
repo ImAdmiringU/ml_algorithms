@@ -31,7 +31,7 @@ class BaseDecisionTree:
     def is_leaf(self) -> bool:
         '''
         Возвращаем True, если y объекта нет
-        левой и правой ноды -данный объект
+        левой и правой ноды - данный объект
         считается листом. Возвращаем False
         в ином случае
         '''
@@ -66,7 +66,7 @@ class BaseDecisionTree:
             для каждого вектора в X
         '''
         
-        self.impurity = self._initial_impurity(y_data=y.values)
+        self.impurity = self._initial_impurity(y=y.values)
         self.value = self._leaf_value(y=y.values)
 
         # Предварительное определение условий
@@ -91,14 +91,14 @@ class BaseDecisionTree:
                     self.left_node = self.__class__(criterion=self.criterion,
                                                     max_depth=new_depth,
                                                     min_samples_split=self.min_samples_split,
-                                                    mins_samples_leaf=self.min_samples_leaf)
+                                                    min_samples_leaf=self.min_samples_leaf)
                     self.left_node._fit(*left_split)
 
                 if len(right_split[0]) >= self.min_samples_leaf:
                     self.right_node = self.__class__(criterion=self.criterion,
                                                      max_depth=new_depth,
                                                      min_samples_split=self.min_samples_split,
-                                                     min_smaples_leaf=self.min_samples_leaf)
+                                                     min_samples_leaf=self.min_samples_leaf)
                     self.right_node._fit(*right_split)
 
     def _initial_impurity(self, y: np.array) -> float:
