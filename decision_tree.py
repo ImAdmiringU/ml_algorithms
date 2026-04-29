@@ -174,8 +174,8 @@ class BaseDecisionTree:
                     temp_left_data = temp[mask]
                     temp_right_data = temp[~mask]
 
-                    if len(temp) < self.min_samples_split or (len(temp_left_data) < self.min_samples_leaf
-                                                              or len(temp_right_data) < self.min_samples_leaf):
+                    if (len(temp_left_data) < self.min_samples_leaf or
+                        len(temp_right_data) < self.min_samples_leaf):
                         continue
                     
                     # Предварительный расчет impurity
@@ -238,9 +238,9 @@ class BaseDecisionTree:
         
         return res
 
-    def _predict_row(self, X) -> int:
+    def _predict_row(self, X) -> int | float:
         '''
-        Возвращает класс для
+        Возвращает предикт для
         соответствующего вектора
 
         Параметры
@@ -248,12 +248,13 @@ class BaseDecisionTree:
         X : pd.Series
             Pandas серия из одного вектора
             для которого выполняется
-            определение класса
+            предикт
 
         Возвращаемое значение
         ---------------------
-        temp_class : int
-            Значение класса в листе дерева
+        value : int | float
+            Значение предикта для
+            наблюдения в листе дерева
         '''
 
         if self.is_leaf:
