@@ -23,20 +23,43 @@ def entropy(y: np.array) -> float:
 def gini(y: np.array) -> float:
     pass
 
-def information_gain(main_node_impurity, y_left, y_right):
+def mse(y: np.array) -> float:
+    '''
+    Функция MSE (Mean Squared Error)
+
+    Параметры
+    ---------
+    y : np.array
+        Одномерный numpy вектор
+        значений наблюдений
+
+    Возвращаемое значение
+    ---------------------
+    res : float
+        MSE в узле    
+    '''
+
+    res = np.mean((y - np.mean(y))**2)
+
+    return res
+
+def mae(y: np.array) -> float:
+    pass
+
+def gain(main_node_impurity, y_left, y_right, criterion_func):
     '''
     Функция для расчета прироста
-    информации (IG) после сплита
+    информации после сплита
 
     Параметры
     ---------
     main_node_impurity : float
-        Значение энтропии в исходном узле
+        Значение impurity в исходном узле
     y_left : np.array
-        Классы объектов после сплита для
+        Таргет объектов после сплита для
         левой ноды
     y_right : np.array
-        Классы объектов после сплита для
+        Таргет объектов после сплита для
         правой ноды
             
     Временные переменные
@@ -55,7 +78,8 @@ def information_gain(main_node_impurity, y_left, y_right):
     y_amount = len(y_left) + len(y_right)
 
     res = (main_node_impurity
-           - len(y_left) / y_amount * entropy(y_left)
-           - len(y_right) / y_amount * entropy(y_right))
+           - (len(y_left) / y_amount * criterion_func(y_left)
+           + len(y_right) / y_amount * criterion_func(y_right))
+           )
     
     return res

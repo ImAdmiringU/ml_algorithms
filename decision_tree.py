@@ -272,7 +272,7 @@ class BaseDecisionTree:
 class DecisionTreeClassifier(BaseDecisionTree):
     def __init__(self,
                  criterion: str = 'entropy',
-                 max_depth: int = 5,
+                 max_depth: int | None = None,
                  min_samples_split: int = 2,
                  min_samples_leaf: int = 1):
         super().__init__(criterion, max_depth, min_samples_split, min_samples_leaf)
@@ -306,17 +306,56 @@ class DecisionTreeClassifier(BaseDecisionTree):
     def _calculate_impurity(self, y_left, y_right):
         match self.criterion:
             case 'entropy':
-                return base.information_gain(self.impurity,
-                                             y_left,
-                                             y_right)
+                return base.gain(self.impurity,
+                                 y_left,
+                                 y_right,
+                                 base.entropy)
             case 'gini':
-                pass
+                return base.gain(self.impurity,
+                                 y_left,
+                                 y_right,
+                                 base.gini)
 
 
 class DecisionTreeRegressor(BaseDecisionTree):
     def __init__(self,
                  criterion: str = 'mse',
-                 max_depth: int = 5,
+                 max_depth: int | None = None,
                  min_samples_split: int = 2,
                  min_samples_leaf: int = 1):
         super().__init__(criterion, max_depth, min_samples_split, min_samples_leaf)
+
+    def _initial_impurity(self, y: np.array):
+        match self.criterion:
+            case 'mse':
+                return base.mse(y=y)
+            case 'mae':
+                return base.mae(y=y)
+    
+    def _leaf_value(self, y: np.array) -> int:
+        '''
+        Предикт для объекта в узле
+        и присвоение этого значения
+        атрибуту объекта
+
+        Параметры
+        ---------
+        y : np.array
+            Таргет. Целевое значение
+            для каждого вектора в X
+        '''
+
+        temp_mean = np.mean(y)
+
+        return temp_mean
+    
+    def _calculate_impurity(self, y_left, y_right):
+        match self.criterion:
+            case 'mse':
+                return base.gain(self.impurity,
+                                 y_left,
+                                 y_right,
+                                 base.mse)
+            case 'mae':
+                pass
+            
