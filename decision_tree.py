@@ -5,7 +5,7 @@ import pandas as pd
 class BaseDecisionTree:
     def __init__(self,
                  criterion: str,
-                 max_depth: int,
+                 max_depth: int | None,
                  min_samples_split: int,
                  min_samples_leaf: int):
         
@@ -13,7 +13,7 @@ class BaseDecisionTree:
         Инициализация гиперпараметров
         '''
         self.criterion: str = criterion
-        self.max_depth: int = max_depth
+        self.max_depth: int | None = max_depth
         self.min_samples_split: int = min_samples_split
         self.min_samples_leaf: int = min_samples_leaf
 
@@ -31,9 +31,9 @@ class BaseDecisionTree:
     def is_leaf(self) -> bool:
         '''
         Возвращаем True, если y объекта нет
-        левой и правой ноды. Данный объект
-        считается листом
-        Возвращаем False в ином случае
+        левой и правой ноды -данный объект
+        считается листом. Возвращаем False
+        в ином случае
         '''
         return True if (self.left_node is None and self.right_node is None) else False
 
@@ -69,30 +69,37 @@ class BaseDecisionTree:
         self.impurity = self._initial_impurity(y_data=y.values)
         self.value = self._leaf_value(y=y.values)
 
-        # Если глубина >= 0 и длина X >= минимального количества
-        # сэмплов для сплита и энтропия >= 0, тогда
-        # можем создавать следующие ноды дерева
-        if (self.max_depth >= 0 and
-            len(X) >= self.min_samples_split and
-            self.impurity >= 0):
-            
+        # Предварительное определение условий
+        # создания следующих нод
+        depth_ok = (self.max_depth is None) or (self.max_depth != 0)
+        size_ok = self.min_samples_split <= len(X)
+        impurity_ok = self.impurity > 0
+
+        if depth_ok and size_ok and impurity_ok:
+            # Поиск фичи и границы оптимального сплита
             self.feature_index, self.threshold = self._find_best_split(X=X, y=y)
 
-            if (self.feature_index is None) or ((self.max_depth - 1) < 0):
-                return None
+            if self.feature_index is not None:
+                new_depth = None if self.max_depth is None else self.max_depth - 1
 
-            # Маска для разделения не левый и правый сплит (pd.DataFrame)
-            mask = X.iloc[:, self.feature_index] < self.threshold
-            left_split = (X[mask], y[mask]) # значения меньше threshold
-            right_split = (X[~mask], y[~mask]) # значения больше threshold
+                # Маска для разделения на левую и правую ноду (pd.DataFrame)
+                mask = X.iloc[:, self.feature_index] < self.threshold
+                left_split = (X[mask], y[mask]) # значения меньше threshold
+                right_split = (X[~mask], y[~mask]) # значения больше threshold
 
-            if len(left_split[0]) >= self.min_samples_leaf:
-                self.left_node = self.__class__(max_depth=self.max_depth - 1)
-                self.left_node._fit(*left_split)
+                if len(left_split[0]) >= self.min_samples_leaf:
+                    self.left_node = self.__class__(criterion=self.criterion,
+                                                    max_depth=new_depth,
+                                                    min_samples_split=self.min_samples_split,
+                                                    mins_samples_leaf=self.min_samples_leaf)
+                    self.left_node._fit(*left_split)
 
-            if len(right_split[0]) >= self.min_samples_leaf:
-                self.right_node = self.__class__(max_depth=self.max_depth - 1)
-                self.right_node._fit(*right_split)
+                if len(right_split[0]) >= self.min_samples_leaf:
+                    self.right_node = self.__class__(criterion=self.criterion,
+                                                     max_depth=new_depth,
+                                                     min_samples_split=self.min_samples_split,
+                                                     min_smaples_leaf=self.min_samples_leaf)
+                    self.right_node._fit(*right_split)
 
     def _initial_impurity(self, y: np.array) -> float:
         raise NotImplementedError()
@@ -204,9 +211,9 @@ class BaseDecisionTree:
 
     def predict(self, X) -> np.array:
         '''
-        Точка входа для предсказания
-        класса объекта. Применяется
-        дерево ко всем объектам
+        Точка входа для предикта
+        класса объекта. Применение
+        дерева ко всем объектам
 
         Параметры
         ---------
