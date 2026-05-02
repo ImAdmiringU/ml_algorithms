@@ -92,9 +92,6 @@ class BaseLinearModel:
 
         return y_pred
 
-    def _add_regularization(self, gradient):
-        pass
-
     def _compute_loss(self, y_true: np.array, y_pred: np.array) -> float:
         raise NotImplementedError()
 
@@ -118,20 +115,69 @@ class LogisticRegression(BaseLinearModel):
         # Граница для классификации: 1 if >= threshold else 0
         self.threshold: float = threshold
 
-        def _sigmoid(self, z: pd.Series) -> pd.Series:
-            '''
-            Возвращение вероятности вместо класса
-            путем применения сигмоиды на линейную комбинацию
+    def _sigmoid(self, z: pd.Series) -> pd.Series:
+        '''
+        Возвращение вероятности вместо класса
+        путем применения сигмоиды на линейную комбинацию
 
-            Параметры
-            ---------
-            z : pd.Series
-                Вектор предиктов после линейной комбинации
+        Параметры
+        ---------
+        z : pd.Series
+            Вектор предиктов после линейной комбинации
 
-            Возвращаемое значение
-            ---------------------
-            pd.Series
-                Вероятности отнесения к
-                классу 0...1
-            '''
-            return 1 / (1 + np.exp(-z))
+        Возвращаемое значение
+        ---------------------
+        pd.Series
+            Вероятности отнесения к
+            классу 0...1
+        '''
+        return 1 / (1 + np.exp(-z))
+
+    def _linear_combination(self, X: pd.DataFrame) -> pd.Series:
+        '''
+        Предварительное получение предикта путем расчета
+        линейной комбинации каждого наблюдения и
+        текущих значений весов + bias. Затем предикты
+        пропускаются через сигмоиду, для получания
+        вероятностей отнесения к классу 1
+
+        Параметры
+        ---------
+
+        X : pd.DataFrame
+            Датасет с векторами наблюдений
+
+        Возвращаемое значение
+        ---------------------
+
+        y_pred : pd.Series
+            Вектор вероятностей отнесения к классу 1
+        '''
+
+        y_pred = self._sigmoid(X.T @ self.weights + self.bias)
+
+        return y_pred
+
+    def _compute_loss(self, y_true: pd.Series, y_pred: pd.Series) -> float:
+        '''
+        Расчет Loss'a при текущих весах вектора self.weights
+
+        Параметры
+        ---------
+
+        y_true : pd.Series
+            Вектор с таргетом, истинный класс
+            для соответствующих векторов
+        y_pred : pd.Series
+            Вектор вероятностей отнесения к классу 1
+            для соответствующих векторов
+
+        Возвращаемое значение
+        ---------------------
+        loss : float
+            Численное значение ошибки на текущей итерации        
+        '''
+
+        loss = -np.mean(y_true * (np.log(y_pred)) + (1 - y_true) * (np.log(1 - y_pred)))
+
+        return loss
