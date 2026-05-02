@@ -21,6 +21,7 @@ class BaseLinearModel:
         '''
         self.regularization: str | None = regularization
         self.C: float = C
+        self.alpha: float = 0.0 if self.regularization is None else 1 / self.C
 
         '''
         Атрибуты модели
@@ -64,8 +65,8 @@ class BaseLinearModel:
 
             # Расчет градиента
             grad_w, grad_b = self._compute_gradient(X=X,
-                                                    y_true=y,
-                                                    y_pred=temp_pred)
+                                                    y_true=y.values,
+                                                    y_pred=temp_pred.values)
 
             self.weights -= self.learning_rate * grad_w
             self.bias -= self.learning_rate * grad_b
@@ -95,7 +96,7 @@ class BaseLinearModel:
     def _compute_loss(self, y_true: np.array, y_pred: np.array) -> float:
         raise NotImplementedError()
 
-    def _compute_gradient(self, X: pd.DataFrame, y_true: pd.Series, y_pred: pd.Series) -> float:
+    def _compute_gradient(self, X: pd.DataFrame, y_true: pd.Series, y_pred: pd.Series) -> tuple[np.array, float]:
         raise NotImplementedError()
 
     def predict(self, X: pd.DataFrame) -> np.array:
@@ -154,21 +155,28 @@ class LogisticRegression(BaseLinearModel):
             Вектор вероятностей отнесения к классу 1
         '''
 
-        y_pred = self._sigmoid(X.T @ self.weights + self.bias)
+        # Граница - эпсилон - для исключения логарифма от 0
+        eps: float = 1e-15
+
+        # Оборачиваем в np.clip для создания границ значений
+        # от eps до 1 - eps
+        y_pred = np.clip(self._sigmoid(X @ self.weights + self.bias),
+                         a_min=eps,
+                         a_max=1 - eps)
 
         return y_pred
 
-    def _compute_loss(self, y_true: pd.Series, y_pred: pd.Series) -> float:
+    def _compute_loss(self, y_true: np.array, y_pred: np.array) -> float:
         '''
         Расчет Loss'a при текущих весах вектора self.weights
 
         Параметры
         ---------
 
-        y_true : pd.Series
+        y_true : np.array
             Вектор с таргетом, истинный класс
             для соответствующих векторов
-        y_pred : pd.Series
+        y_pred : np.array
             Вектор вероятностей отнесения к классу 1
             для соответствующих векторов
 
@@ -180,4 +188,51 @@ class LogisticRegression(BaseLinearModel):
 
         loss = -np.mean(y_true * (np.log(y_pred)) + (1 - y_true) * (np.log(1 - y_pred)))
 
+        match self.regularization:
+            case 'l1':
+                # L1-регуляризация:
+                # Суммируем произведение обратного
+                # коэффициента alpha и L1 нормы
+                loss += self.alpha * np.sum(np.abs(self.weights))
+            case 'l2':
+                # L2-регуляризация:
+                # Суммируем произведение обратного
+                # коэффициента alpha и L2 нормы
+                loss += (self.alpha / 2) * np.sum(self.weights**2)
+        
         return loss
+
+    def _compute_gradient(self, X: pd.DataFrame, y_true: np.array, y_pred: np.array) -> tuple[np.array, float]:
+        '''
+        Расчет градиента для вектора self.weights
+        и свободного члена self.bias
+
+        Параметры
+        ---------
+        X : pd.DataFrame
+            Датасет с векторами наблюдений
+        y_true : np.array
+            Вектор с таргетом, истинный класс
+            для соответствующих векторов
+        y_pred : np.array
+            Вектор вероятностей отнесения к классу 1
+            для соответствующих векторов
+
+        Возвращаемое значение
+        ---------------------
+        grad_w : np.array
+            Вектор градиента для self.weights
+        grad_b : float
+            Градиент для self.bias        
+        '''
+
+        grad_w = (1 / len(X)) * (X.T @ (y_pred - y_true))
+        grad_b = (1 / len(X)) * np.sum(y_pred - y_true)
+
+        match self.regularization:
+            case 'l1':
+                grad_w += self.alpha * np.sign(self.weights)
+            case 'l2':
+                grad_w += self.alpha * self.weights
+
+        return grad_w, grad_b
