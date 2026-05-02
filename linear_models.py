@@ -1,4 +1,3 @@
-import base
 import numpy as np
 import pandas as pd
 
@@ -226,13 +225,21 @@ class LogisticRegression(BaseLinearModel):
             Градиент для self.bias        
         '''
 
+        # Производные по loss для self.weights и self.bias
         grad_w = (1 / len(X)) * (X.T @ (y_pred - y_true))
         grad_b = (1 / len(X)) * np.sum(y_pred - y_true)
 
+        # При обучении с регуляризацией суммируем
+        # производную по соответствующей норме
         match self.regularization:
             case 'l1':
                 grad_w += self.alpha * np.sign(self.weights)
             case 'l2':
                 grad_w += self.alpha * self.weights
 
-        return grad_w, grad_b
+        return grad_w.values, grad_b
+    
+    def predict(self, X: pd.DataFrame) -> np.array:
+        y_pred = np.array([1 if i >= self.threshold else 0 for i in self._linear_combination(X=X)])
+
+        return y_pred
