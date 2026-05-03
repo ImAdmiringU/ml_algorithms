@@ -267,11 +267,74 @@ class LinearRegression(BaseLinearModel):
         else:
             return super().fit(X, y)
 
-    def _compute_loss(self, y_true, y_pred):
-        return super()._compute_loss(y_true, y_pred)
+    def _compute_loss(self, y_true: np.array, y_pred: np.array) -> float:
+        '''
+        Расчет Loss'a при текущих весах вектора self.weights
+
+        Параметры
+        ---------
+
+        y_true : np.array
+            Вектор с таргетом, истинный класс
+            для соответствующих векторов
+        y_pred : np.array
+            Вектор вероятностей отнесения к классу 1
+            для соответствующих векторов
+
+        Возвращаемое значение
+        ---------------------
+        loss : float
+            Численное значение ошибки на текущей итерации        
+        '''
+
+        loss = np.mean((y_pred - y_true)**2)
+
+        match self.regularization:
+            case 'l1':
+                loss += self.alpha * np.sum(np.abs(self.weights))
+            case 'l2':
+                loss += self.alpha * np.sum(self.weights**2)
+
+        return loss
     
-    def _compute_gradient(self, X, y_true, y_pred):
-        return super()._compute_gradient(X, y_true, y_pred)
+    def _compute_gradient(self, X: pd.DataFrame, y_true: np.array, y_pred: np.array) -> tuple[np.array, float]:
+        '''
+        Расчет градиента для вектора self.weights
+        и свободного члена self.bias
+
+        Параметры
+        ---------
+        X : pd.DataFrame
+            Датасет с векторами наблюдений
+        y_true : np.array
+            Вектор с таргетом, истинные
+            значения наблюдений
+        y_pred : np.array
+            Вектор с предикт значениями
+
+        Возвращаемое значение
+        ---------------------
+        grad_w : np.array
+            Вектор градиента для self.weights
+        grad_b : float
+            Градиент для self.bias        
+        '''
+
+        # Производные по loss для self.weights и self.bias
+        grad_w = (2 / len(X)) * (X.T @ (y_pred - y_true))
+        grad_b = (2 / len(X)) * np.sum(y_pred - y_true)
+
+        # При обучении с регуляризацией суммируем
+        # производную по соответствующей норме
+        match self.regularization:
+            case 'l1':
+                grad_w += self.alpha * np.sign(self.weights)
+            case 'l2':
+                grad_w += self.alpha * self.weights
+
+        return grad_w.values, grad_b
     
-    def predict(self, X):
-        return super().predict(X)
+    def predict(self, X: pd.DataFrame) -> np.array:
+        y_pred = self._linear_combination(X=X).values
+
+        return y_pred
