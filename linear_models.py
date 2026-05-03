@@ -243,3 +243,35 @@ class LogisticRegression(BaseLinearModel):
         y_pred = np.array([1 if i >= self.threshold else 0 for i in self._linear_combination(X=X)])
 
         return y_pred
+    
+
+class LinearRegression(BaseLinearModel):
+    def __init__(self,
+                 learning_rate: float = 0.01,
+                 n_iterations: int = 1000,
+                 tolerance: float = 0.0001,
+                 regularization: str | None = None,
+                 C: float = 1.0,
+                 use_analytical: bool = False):
+        super().__init__(learning_rate, n_iterations, tolerance, regularization, C)
+
+        # Флаг для получения вектора весов self.weights,
+        # используя аналитическое решение системы
+        self.use_analytical: bool = use_analytical
+
+    def fit(self, X: pd.DataFrame, y: pd.Series) -> None:
+        if self.use_analytical:
+            # Аналитическое решение
+            # np.inv(X.T @ X) @ X.T @ y
+            pass
+        else:
+            return super().fit(X, y)
+
+    def _compute_loss(self, y_true, y_pred):
+        return super()._compute_loss(y_true, y_pred)
+    
+    def _compute_gradient(self, X, y_true, y_pred):
+        return super()._compute_gradient(X, y_true, y_pred)
+    
+    def predict(self, X):
+        return super().predict(X)
