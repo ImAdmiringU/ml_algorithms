@@ -293,7 +293,7 @@ class LinearRegression(BaseLinearModel):
             case 'l1':
                 loss += self.alpha * np.sum(np.abs(self.weights))
             case 'l2':
-                loss += self.alpha * np.sum(self.weights**2)
+                loss += (self.alpha / 2) * np.sum(self.weights**2)
 
         return loss
     
