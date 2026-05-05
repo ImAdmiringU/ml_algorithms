@@ -21,7 +21,24 @@ def entropy(y: np.array) -> float:
     return res
 
 def gini(y: np.array) -> float:
-    pass
+    '''
+    Функция для расчета Gini criterion
+
+    Параметры
+    ---------
+
+    y : np.array
+        Одномерный вектор классов
+
+    Возвращаемое значение
+    ---------------------
+    res : float
+        Gini criterion в текущем узле
+    '''
+
+    res = 1 - np.sum([(i / len(y))**2 for i in np.bincount(y.astype(int))])
+
+    return res
 
 def mse(y: np.array) -> float:
     '''
