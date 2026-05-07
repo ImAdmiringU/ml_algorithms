@@ -61,7 +61,24 @@ def mse(y: np.array) -> float:
     return res
 
 def mae(y: np.array) -> float:
-    pass
+    '''
+    Функция MAE (Mean Absolute Error)
+
+    Параметры
+    ---------
+    y : np.array
+        Одномерный numpy вектор
+        значений наблюдений
+
+    Возвращаемое значение
+    ---------------------
+    res : float
+        MAE в узле
+    '''
+
+    res = np.mean(np.abs(y - np.median(y)))
+
+    return res
 
 def gain(main_node_impurity, y_left, y_right, criterion_func):
     '''
