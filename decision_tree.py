@@ -278,7 +278,7 @@ class DecisionTreeClassifier(BaseDecisionTree):
                  min_samples_leaf: int = 1):
         super().__init__(criterion, max_depth, min_samples_split, min_samples_leaf)
 
-    def _initial_impurity(self, y: np.array):
+    def _initial_impurity(self, y: np.array) -> float:
         match self.criterion:
             case 'entropy':
                 return base.entropy(y=y)
@@ -304,7 +304,7 @@ class DecisionTreeClassifier(BaseDecisionTree):
 
         return temp_class
     
-    def _calculate_impurity(self, y_left, y_right):
+    def _calculate_impurity(self, y_left, y_right) -> float:
         match self.criterion:
             case 'entropy':
                 return base.gain(self.impurity,
@@ -326,14 +326,14 @@ class DecisionTreeRegressor(BaseDecisionTree):
                  min_samples_leaf: int = 1):
         super().__init__(criterion, max_depth, min_samples_split, min_samples_leaf)
 
-    def _initial_impurity(self, y: np.array):
+    def _initial_impurity(self, y: np.array) -> float:
         match self.criterion:
             case 'mse':
                 return base.mse(y=y)
             case 'mae':
                 return base.mae(y=y)
     
-    def _leaf_value(self, y: np.array) -> int:
+    def _leaf_value(self, y: np.array) -> float:
         '''
         Предикт для объекта в узле
         и присвоение этого значения
@@ -344,11 +344,21 @@ class DecisionTreeRegressor(BaseDecisionTree):
         y : np.array
             Таргет. Целевое значение
             для каждого вектора в X
+
+        Возвращаемое значение
+        ---------------------
+        res : float
+            Значение в узле в соответствии
+            с self.criterion
         '''
 
-        temp_mean = np.mean(y)
+        match self.criterion:
+            case 'mse':
+                res = np.mean(y)
+            case 'mae':
+                res = np.median(y)
 
-        return temp_mean
+        return res
     
     def _calculate_impurity(self, y_left, y_right):
         match self.criterion:
@@ -358,5 +368,8 @@ class DecisionTreeRegressor(BaseDecisionTree):
                                  y_right,
                                  base.mse)
             case 'mae':
-                pass
+                return base.gain(self.impurity,
+                                 y_left,
+                                 y_right,
+                                 base.mae)
             
