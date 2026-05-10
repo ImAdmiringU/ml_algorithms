@@ -67,3 +67,26 @@ class StandardScaler:
 
         # Возвращаем нормализованный датасет
         return self.transform(X=X)
+
+
+class MinMaxScaler:
+    def __init__(self, feature_range: tuple = (0, 1)):
+        self.feature_min: float = feature_range[0]
+        self.feature_max: float = feature_range[1]
+        self.min_: np.array = None
+        self.max_: np.array = None
+        self.scale_: np.array = None
+        self.data_min_: np.array = None
+        self.data_max_: np.array = None
+        
+    def fit(self) -> None:
+        pass
+
+    def transform(self):
+        pass
+
+    def fit_transform(self):
+        pass
+
+    def inverse_transform(self):
+        pass
