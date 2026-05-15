@@ -7,7 +7,8 @@ class BaseDecisionTree:
                  criterion: str,
                  max_depth: int | None,
                  min_samples_split: int,
-                 min_samples_leaf: int):
+                 min_samples_leaf: int,
+                 max_features: int | str | None):
         
         '''
         Инициализация гиперпараметров
@@ -16,6 +17,7 @@ class BaseDecisionTree:
         self.max_depth: int | None = max_depth
         self.min_samples_split: int = min_samples_split
         self.min_samples_leaf: int = min_samples_leaf
+        self.max_features: int | str | None = max_features
 
         '''
         Атрибуты текущего узла дерева
@@ -91,21 +93,17 @@ class BaseDecisionTree:
                     self.left_node = self.__class__(criterion=self.criterion,
                                                     max_depth=new_depth,
                                                     min_samples_split=self.min_samples_split,
-                                                    min_samples_leaf=self.min_samples_leaf)
+                                                    min_samples_leaf=self.min_samples_leaf,
+                                                    max_features=self.max_features)
                     self.left_node._fit(*left_split)
 
                 if len(right_split[0]) >= self.min_samples_leaf:
                     self.right_node = self.__class__(criterion=self.criterion,
                                                      max_depth=new_depth,
                                                      min_samples_split=self.min_samples_split,
-                                                     min_samples_leaf=self.min_samples_leaf)
+                                                     min_samples_leaf=self.min_samples_leaf,
+                                                     max_features=self.max_features)
                     self.right_node._fit(*right_split)
-
-    def _initial_impurity(self, y: np.array) -> float:
-        raise NotImplementedError()
-    
-    def _leaf_value(self, y: np.array) -> int | float:
-        raise NotImplementedError()
 
     def _find_best_split(self, X: pd.DataFrame, y: pd.Series) -> tuple[int, float]:
         '''
@@ -205,9 +203,6 @@ class BaseDecisionTree:
         res = sorted(valid_splits, key=lambda x: x[-1])
 
         return res[-1][:2]
-        
-    def _calculate_impurity(self, y_left, y_right):
-        raise NotImplementedError()
 
     def predict(self, X) -> np.array:
         '''
@@ -268,15 +263,29 @@ class BaseDecisionTree:
                 return self.left_node._predict_row(X=X)
             else:
                 return self.right_node._predict_row(X=X)
+            
+    def _initial_impurity(self, y: np.array) -> float:
+        raise NotImplementedError()
+    
+    def _leaf_value(self, y: np.array) -> int | float:
+        raise NotImplementedError()
+    
+    def _calculate_impurity(self, y_left, y_right) -> float:
+        raise NotImplementedError()    
 
 
 class DecisionTreeClassifier(BaseDecisionTree):
     def __init__(self,
-                 criterion: str = 'entropy',
+                 criterion: str = 'gini',
                  max_depth: int | None = None,
                  min_samples_split: int = 2,
-                 min_samples_leaf: int = 1):
-        super().__init__(criterion, max_depth, min_samples_split, min_samples_leaf)
+                 min_samples_leaf: int = 1,
+                 max_features: int | str | None = None):
+        super().__init__(criterion,
+                         max_depth,
+                         min_samples_split,
+                         min_samples_leaf,
+                         max_features)
 
     def _initial_impurity(self, y: np.array) -> float:
         match self.criterion:
@@ -323,8 +332,13 @@ class DecisionTreeRegressor(BaseDecisionTree):
                  criterion: str = 'mse',
                  max_depth: int | None = None,
                  min_samples_split: int = 2,
-                 min_samples_leaf: int = 1):
-        super().__init__(criterion, max_depth, min_samples_split, min_samples_leaf)
+                 min_samples_leaf: int = 1,
+                 max_features: int | str | None = None):
+        super().__init__(criterion,
+                         max_depth,
+                         min_samples_split,
+                         min_samples_leaf,
+                         max_features)
 
     def _initial_impurity(self, y: np.array) -> float:
         match self.criterion:
