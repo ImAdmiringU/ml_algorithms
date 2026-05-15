@@ -76,17 +76,85 @@ class MinMaxScaler:
         self.min_: np.array = None
         self.max_: np.array = None
         self.scale_: np.array = None
-        self.data_min_: np.array = None
-        self.data_max_: np.array = None
+        self.mask: np.array = None
         
-    def fit(self) -> None:
-        pass
+    def fit(self, X: pd.DataFrame) -> None:
+        '''
+        Получения исходных параметров
+        для скейлинга
 
-    def transform(self):
-        pass
+        X_std = (X - X_min) / (X_max - X_min)
 
-    def fit_transform(self):
-        pass
+        Используем scale и min, max, для экономии
+        памяти, не сохраняя исходный датасет
 
-    def inverse_transform(self):
+        Параметры
+        ---------
+        X : pd.DataFrame
+            Исходный датафрейм с наблюдениями
+        '''
+
+        self.min_ = X.min().values
+        self.max_ = X.max().values
+
+        # Маска для исключения деления на ноль (0)
+        self.mask = (self.min_ == self.max_)
+
+        self.scale_ = np.where(self.mask,
+                               0,
+                               (self.feature_max - self.feature_min) / (self.max_ - self.min_))
+
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        '''
+        Преобразование датафрейма в соответствии
+        с вычисленным self.scale_
+
+        Параметры
+        ---------
+        X : pd.DataFrame
+            Датасет для скейлинга
+
+        Возвращаемое значение
+        ---------------------
+        X_scaled : pd.DataFrame
+            Датасет после скейлинга
+        '''
+
+        X_scaled = np.where(self.mask,
+                            self.feature_min,
+                            self.feature_min + (X - self.min_) * self.scale_)
+
+    def fit_transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        '''
+        Объединенный метод обучения и преобразования
+
+        Параметры
+        ---------
+        X : pd.DataFrame
+            Датасет для скейлинга
+        
+        Возвращаемое значение
+        ---------------------
+        X_scaled : pd.DataFrame
+            Датасет после скейлинга
+        '''
+
+        self.fit(X=X)
+        X_scaled = self.transform(X=X)
+
+    def inverse_transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        '''
+        Операция обратная transform. Возврат к исходному
+        датафрейму до произведения скейлинга
+
+        Параметры
+        ---------
+        X : pd.DataFrame
+            Скалированный датасет
+        
+        Возвращаемое значение
+        ---------------------
+        X_inversed : pd.DataFrame
+            Датасет с исходными значениями
+        '''
         pass
