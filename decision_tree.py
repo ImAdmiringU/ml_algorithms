@@ -145,9 +145,9 @@ class BaseDecisionTree:
         X_y_data = np.hstack((X.values, y.values.reshape(len(y), -1)))
         best_splits: list = []
         
-        # Проходим циклом по всем фичам через индекс, соединяя данные по фиче (np.array) c
-        # таргет-значением в y (np.array), получая двумерный массив для сортировки и сплита
-        for i in range(len(X.columns)):
+        # Проход циклом по срезу фичей через индекс, соединяя данные по фиче (np.array) c
+        # таргетом в y (np.array), получая двумерный массив для сортировки и сплита
+        for i in self._get_feature_indices(np.array(X.columns)):
             
             best_feature: int = None
             best_threshold: float = None
@@ -263,6 +263,43 @@ class BaseDecisionTree:
                 return self.left_node._predict_row(X=X)
             else:
                 return self.right_node._predict_row(X=X)
+
+    def _get_feature_indices(self, features: np.array) -> np.array:
+        '''
+        Метод для получения срезов по фичам
+
+        Параметры
+        ---------
+        features : np.array
+            Массив с индексами всех фичей датасета
+
+        Возвращаемое значение
+        ---------------------
+        res : np.array
+            Индексы фичей для поиска лучшего сплита
+        '''
+
+        if self.max_features is None:
+            return features
+        elif isinstance(self.max_features, int):
+            if self.max_features <= 0:
+                raise IndexError('Некорректное количество фичей (self.max_features <= 0)')
+            elif self.max_features >= len(features):
+                return features
+            else:
+                return np.random.choice(a=features,
+                                        size=self.max_features,
+                                        replace=False)
+        elif isinstance(self.max_features, str):
+            match self.max_features:
+                case 'sqrt':
+                    return np.random.choice(a=features,
+                                            size=int(np.sqrt(len(features))),
+                                            replace=False)
+                case 'log2':
+                    return np.random.choice(a=features,
+                                            size=int(np.log2(len(features))),
+                                            replace=False)
             
     def _initial_impurity(self, y: np.array) -> float:
         raise NotImplementedError()
