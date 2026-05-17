@@ -10,11 +10,14 @@
 
 ```text
 ml_algorithms/
-├── decision_tree.py      # CART (классификация + регрессия)
-├── knn.py                # KNN (классификация + регрессия)
-├── linear_models.py      # LogisticRegression, LinearRegression
-├── preprocessing.py      # StandardScaler, MinMaxScaler
+├── decision_tree.py          # CART (классификация + регрессия)
+├── knn.py                    # KNN (классификация + регрессия)
+├── linear_models.py          # LogisticRegression, LinearRegression
+├── preprocessing.py          # StandardScaler, MinMaxScaler
 ├── base.py                   # Вспомогательные функции (entropy, mse, gain...)
+│
+├── ensembles/                # Ансамблевые методы
+│   └── random_forest.py      # Random Forest (классификация + регрессия)
 │
 └── cpp_extensions/           # C++ утилиты (опционально, для ускорения)
     ├── cpp_utils.cpp         # Реализация
