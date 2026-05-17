@@ -14,7 +14,12 @@ ml_algorithms/
 ├── knn.py                # KNN (классификация + регрессия)
 ├── linear_models.py      # LogisticRegression, LinearRegression
 ├── preprocessing.py      # StandardScaler, MinMaxScaler
-└── base.py               # Вспомогательные функции (entropy, mse, gain...)
+├── base.py                   # Вспомогательные функции (entropy, mse, gain...)
+│
+└── cpp_extensions/           # C++ утилиты (опционально, для ускорения)
+    ├── cpp_utils.cpp         # Реализация
+    ├── cpp_utils.h           # Заголовки
+    └── wrapper.cpp           # pybind11 обёртка для Python
 ```
 
 ---
@@ -23,7 +28,7 @@ ml_algorithms/
 
 | Категория | Алгоритмы |
 |-----------|-----------|
-| 📊 Линейные модели | ✅ LinearRegression, ✅ LogisticRegression |
+| 📊 Линейные модели | ✅ LogisticRegression, ✅ LinearRegression |
 | 🌳 Деревья | ✅ DecisionTreeClassifier, ✅ DecisionTreeRegressor |
 | 👥 Ленивые методы | ✅ KNNClassifier, ✅ KNNRegressor |
 | 🔧 Предобработка | ✅ StandardScaler, ✅ MinMaxScaler |
@@ -67,14 +72,22 @@ print(f"Accuracy: {accuracy_score(y_test, preds):.3f}")
 ## 🧠 Важное замечание
 Все модели ожидают на вход pd.DataFrame для признаков и pd.Series для целевой переменной.
 Предобработка данных (масштабирование, кодирование категорий, обработка пропусков) — ответственность пользователя.
-Внутри модели работают с numpy для производительности.
+Внутри модели работают с NumPy для производительности.
 
 ---
 
 ## 📦 Зависимости
-* NumPy
-* Pandas
-* Scikit-learn (только для тестов и генерации данных)
+
+### Обязательные (Python)
+- `NumPy`
+- `Pandas`
+
+### Для запуска тестов и примеров
+- `Scikit-learn` (только для генерации данных)
+
+### Для сборки C++ расширения (опционально)
+- Компилятор C++11 (GCC 4.8+, Clang 3.3+, MSVC 2019+)
+- `pybind11` — установка: `pip install pybind11`
 
 ---
 
