@@ -147,7 +147,7 @@ class BaseDecisionTree:
         
         # Проход циклом по срезу фичей через индекс, соединяя данные по фиче (np.array) c
         # таргетом в y (np.array), получая двумерный массив для сортировки и сплита
-        for i in self._get_feature_indices(np.array(X.columns)):
+        for i in self._get_feature_indices(np.arange(len(X.columns))):
             
             best_feature: int = None
             best_threshold: float = None
