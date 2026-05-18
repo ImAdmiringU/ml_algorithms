@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from decision_tree import DecisionTreeClassifier, DecisionTreeRegressor
+# from cpp_backend.decision_tree_cpp import DTClassifierCPP, DTRegressorCPP
 
 class BaseRandomForest:
     def __init__(self,
@@ -24,6 +25,68 @@ class BaseRandomForest:
         '''
 
         self.trees: list = list()
+
+    def _bootstrap_sample(self, X: pd.DataFrame, y: pd.Series) -> tuple[pd.DataFrame, pd.Series]:
+        '''
+        Создание среза по входному датасету
+        для получения bootstrap сэмпла
+
+        Параметры
+        ---------
+        X : pd.DataFrame
+            Исходный датасет с наблюдениями
+        y : pd.Series
+            Таргет
+
+        Возвращаемое значение
+        ---------------------
+        res : tuple[pd.DataFrame, pd.Series]
+            Bootstrap сэмпл на основе исходного датасета
+        '''
+
+        # Получение индексов для среза
+        indices = np.random.choice(len(X), len(X), replace=self.bootstrap)
+        
+        # Срез по наблюдениям
+        res = X.iloc[indices], y[indices]
+
+        return res
+    
+    def fit(self, X: pd.DataFrame, y: pd.Series) -> None:
+        '''
+        Метод для обучения деревьев RF
+
+        Параметры
+        ---------
+        X : pd.DataFrame
+            Исходный датасет со всеми наблюдениями
+        y : pd.Series
+            Исходный вектор таргет
+        '''
+
+        for _ in range(self.n_estimators):
+            X_sample, y_sample = self._bootstrap_sample(X=X, y=y)
+
+            # Создаем новое дерево на каждой итерации
+            tree = self._create_tree()
+
+            # Обучение соответствующего дерева
+            tree.fit(X_sample, y_sample)
+
+            # Добавляем объект в список для формирования RF
+            self.trees.append(tree)
+    
+    def predict(self, X: pd.DataFrame) -> np.array:
+        predictions = np.array([tree.predict(X) for tree in self.trees])
+        res = self._aggregate(predictions=predictions)
+
+        return res
+
+    def _create_tree(self):
+        raise NotImplementedError()
+    
+    def _aggregate(self, predictions: np.array) -> np.array:
+        raise NotImplementedError()
 
 
 class RandomForestClassifier(BaseRandomForest):
