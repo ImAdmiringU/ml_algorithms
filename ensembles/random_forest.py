@@ -119,7 +119,7 @@ class RandomForestClassifier(BaseRandomForest):
 
         Возвращаемое значение
         ---------------------
-        tree : DecisionTreeClassifier | DecisionTreeClassifierCPP
+        tree : DecisionTreeClassifier | DTClassifierCPP
             Экземпляр соответствующего объекта
         '''
 
@@ -166,4 +166,52 @@ class RandomForestClassifier(BaseRandomForest):
 
 
 class RandomForestRegressor(BaseRandomForest):
-    pass
+    def _create_tree(self) -> DecisionTreeRegressor:
+        '''
+        Метод для создания экземпляра DecisionTreeRegressor
+        с заданными параметрами
+
+        Возвращаемое значение
+        ---------------------
+        tree : DecisionTreeRegressor | DTRegressorCPP
+            Экземпляр соответствующего объекта
+        '''
+
+        if self.use_cpp:
+            # Будущая реализация сплита на C++
+            # tree = DTRegressorCPP(max_depth=self.max_depth,
+            #                       min_samples_split=self.min_samples_split,
+            #                       min_samples_leaf=self.min_samples_leaf,
+            #                       max_features=self.max_features)
+            pass
+        else:
+            tree = DecisionTreeRegressor(max_depth=self.max_depth,
+                                         min_samples_split=self.min_samples_split,
+                                         min_samples_leaf=self.min_samples_leaf,
+                                         max_features=self.max_features)
+
+        return tree
+    
+    def _aggregate(self, predictions: np.array) -> np.array:
+        '''
+        Метод для агрегации и получения итогового
+        вектора средних значений
+
+        Параметры
+        ---------
+        predictions : np.array
+            Двумерный массив с векторами предиктов
+            каждого экземпляра дерева
+
+        Возвращаемое значение
+        ---------------------
+        res : np.array
+            Итоговый вектор предиктов по
+            всем деревьям
+        '''
+
+        # Формирование средних значений
+        # по всем деревьям
+        res = np.mean(predictions, axis=0)
+        
+        return res
