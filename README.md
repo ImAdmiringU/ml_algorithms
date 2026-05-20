@@ -19,6 +19,13 @@ ml_algorithms/
 ├── ensembles/                # Ансамблевые методы
 │   └── random_forest.py      # Random Forest (классификация + регрессия)
 │
+├── decomposition/            # Снижение размерности
+│   ├── pca.py                # Principal Component Analysis
+│   └── tsne.py               # t-SNE (опционально)
+│
+├── clustering/               # Кластеризация
+│   └── kmeans.py             # K-Means
+│
 └── cpp_extensions/           # C++ утилиты (опционально, для ускорения)
     ├── cpp_utils.cpp         # Реализация
     ├── cpp_utils.h           # Заголовки
@@ -35,10 +42,9 @@ ml_algorithms/
 | 🌳 Деревья | ✅ DecisionTreeClassifier, ✅ DecisionTreeRegressor |
 | 👥 Ленивые методы | ✅ KNNClassifier, ✅ KNNRegressor |
 | 🔧 Предобработка | ✅ StandardScaler, ✅ MinMaxScaler |
-| ⏳ Ансамбли | ⏳ Random Forest |
+| 🌲🌲 Ансамбли | ✅ RandomForestСlassifier, ✅ RandomForestRegressor |
+| ⏳ Снижение размерности | ⏳ PCA, ⏳ t-SNE |
 | ⏳ Кластеризация | ⏳ k-Means |
-| ⏳ Снижение размерности | ⏳ PCA, t-SNE |
-
 
 ---
 
