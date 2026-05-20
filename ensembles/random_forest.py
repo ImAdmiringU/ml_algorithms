@@ -48,7 +48,7 @@ class BaseRandomForest:
         indices = np.random.choice(len(X), len(X), replace=self.bootstrap)
         
         # Срез по наблюдениям
-        res = X.iloc[indices], y[indices]
+        res = X.iloc[indices], y.iloc[indices]
 
         return res
     
@@ -77,7 +77,29 @@ class BaseRandomForest:
             self.trees.append(tree)
     
     def predict(self, X: pd.DataFrame) -> np.array:
+        '''
+        Точка входа для предикта
+        класса объекта. Применение
+        дерева ко всем объектам
+
+        Параметры
+        ---------
+        X : pd.DataFrame
+            Датафрейм с векторами объектов,
+            для которых будет осуществляться
+            предсказание классов
+
+        Возвращаемое значение
+        ---------------------
+        res : np.array
+            Вектор numpy, с предсказанными
+            классами для векторов X
+        '''
+
+        # Получаем вектора предиктов каждого дерева
         predictions = np.array([tree.predict(X) for tree in self.trees])
+
+        # Агрегируем вектора из предиктов
         res = self._aggregate(predictions=predictions)
 
         return res
@@ -90,7 +112,57 @@ class BaseRandomForest:
 
 
 class RandomForestClassifier(BaseRandomForest):
-    pass
+    def _create_tree(self) -> DecisionTreeClassifier:
+        '''
+        Метод для создания экземпляра DecisionTreeClassifier
+        с заданными параметрами
+
+        Возвращаемое значение
+        ---------------------
+        tree : DecisionTreeClassifier | DecisionTreeClassifierCPP
+            Экземпляр соответствующего объекта
+        '''
+
+        if self.use_cpp:
+            # Будущая реализация сплита на C++
+            # tree = DTClassifierCPP(max_depth=self.max_depth,
+            #                        min_samples_split=self.min_samples_split,
+            #                        min_samples_leaf=self.min_samples_leaf,
+            #                        max_features=self.max_features)
+            pass
+        else:
+            tree = DecisionTreeClassifier(max_depth=self.max_depth,
+                                          min_samples_split=self.min_samples_split,
+                                          min_samples_leaf=self.min_samples_leaf,
+                                          max_features=self.max_features)
+
+        return tree
+
+    def _aggregate(self, predictions: np.array) -> np.array:
+        '''
+        Метод для агрегации и получения итогового
+        вектора классов путем голосования большинства
+
+        Параметры
+        ---------
+        predictions : np.array
+            Двумерный массив с векторами предиктов
+            каждого экземпляра дерева
+
+        Возвращаемое значение
+        ---------------------
+        res : np.array
+            Итоговый вектор предиктов по
+            всем деревьям
+        '''
+
+        # Формирование большинства для каждого наблюдения
+        # по всем деревьям
+        res = np.apply_along_axis(lambda x: np.bincount(x.astype(int)).argmax(),
+                                  axis=0,
+                                  arr=predictions)
+        
+        return res
 
 
 class RandomForestRegressor(BaseRandomForest):
