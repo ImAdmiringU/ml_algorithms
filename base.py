@@ -80,7 +80,10 @@ def mae(y: np.array) -> float:
 
     return res
 
-def gain(main_node_impurity, y_left, y_right, criterion_func):
+def gain(main_node_impurity: float,
+         y_left: np.array,
+         y_right: np.array,
+         criterion_func: callable) -> float:
     '''
     Функция для расчета прироста
     информации после сплита
@@ -95,6 +98,8 @@ def gain(main_node_impurity, y_left, y_right, criterion_func):
     y_right : np.array
         Таргет объектов после сплита для
         правой ноды
+    criterion_func : callable
+        Соответствующий criterion для расчета gain
             
     Временные переменные
     --------------------
