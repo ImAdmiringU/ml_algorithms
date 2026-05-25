@@ -24,8 +24,7 @@ class PCA:
         self.mean_ = np.mean(X.values, axis=0)
 
         # Вычисление ковариационной матрицы
-        # на основе центрированных данных
-        cov_m = np.cov(X.values - self.mean_, rowvar=False)
+        cov_m = np.cov(X.values, rowvar=False)
 
         # Получение собственных чисел и векторов
         eigenvalues, eigenvectors = np.linalg.eigh(cov_m)
@@ -33,5 +32,58 @@ class PCA:
         # Получение срезов в соответствии с
         # вкладом каждой компоненты (по убыванию)
         indices = np.argsort(eigenvalues)[::-1]
-        self.components = eigenvectors[:, indices[:self.n_components]].T
+
+        if self.n_components is not None:
+            k = self.n_components
+        elif self.n_components is None:
+            k = len(X.columns)
+
+        self.components = eigenvectors[:, indices[:k]].T
         self.explained_var_ = eigenvalues[indices] / np.sum(eigenvalues)
+
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        '''
+        Метод для снижения размерности в соответствии
+        с полученными компонентами
+
+        Параметры
+        ---------
+        X : pd.DataFrame
+            Датасет для которого производится
+            снижение размерности
+
+        Возвращаемое значение
+        ---------------------
+        res : pd.DataFrame
+            Датафрейм с меньшей размерностью
+        '''
+
+        # Центрирование входных данных
+        X_centered = X - self.mean_
+
+        # Получение проекции данных
+        res = X_centered @ self.components.T
+
+        return res
+
+    def fit_transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        '''
+        Объединенный метод обучения и преобразования
+        
+        Параметры
+        ---------
+        X : pd.DataFrame
+            Датасет для которого производится
+            снижение размерности
+
+        Возвращаемое значение
+        ---------------------
+        res : pd.DataFrame
+            Датафрейм с меньшей размерностью
+        '''
+
+        self.fit(X=X)
+
+        res = self.transform(X=X)
+
+        return res
