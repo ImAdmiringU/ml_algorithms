@@ -21,7 +21,7 @@ ml_algorithms/
 │
 ├── decomposition/            # Снижение размерности
 │   ├── pca.py                # Principal Component Analysis
-│   └── tsne.py               # t-SNE (опционально)
+│   └── tsne.py               # t-SNE
 │
 ├── clustering/               # Кластеризация
 │   └── kmeans.py             # K-Means
@@ -38,13 +38,14 @@ ml_algorithms/
 
 | Категория | Алгоритмы |
 |-----------|-----------|
-| 📊 Линейные модели | ✅ LogisticRegression, ✅ LinearRegression |
 | 🌳 Деревья | ✅ DecisionTreeClassifier, ✅ DecisionTreeRegressor |
+| 📊 Линейные модели | ✅ LogisticRegression, ✅ LinearRegression |
 | 👥 Ленивые методы | ✅ KNNClassifier, ✅ KNNRegressor |
-| 🔧 Предобработка | ✅ StandardScaler, ✅ MinMaxScaler |
 | 🌲🌲 Ансамбли | ✅ RandomForestСlassifier, ✅ RandomForestRegressor |
-| ⏳ Снижение размерности | ⏳ PCA, ⏳ t-SNE |
-| ⏳ Кластеризация | ⏳ k-Means |
+| 🧩 Снижение размерности | ✅ PCA, ⏳ t-SNE |
+| 🧲 Кластеризация | ⏳ k-Means |
+| 🚀 Градиентный бустинг | ⏳ GBM |
+| 🔧 Предобработка | ✅ StandardScaler, ✅ MinMaxScaler |
 
 ---
 
