@@ -14,11 +14,45 @@ class KMeans:
         self.labels_: np.array = None
         self.inertia_: np.array = None
 
-    def fit(self):
+    def fit(self, X: pd.DataFrame) -> None:
+        '''
+        Метод для обучения
+
+        Параметры
+        ---------
+        X : pd.DataFrame
+            Датасет с неразмеченными наблюдениями.
+        '''
         pass
 
-    def predict(self):
+    def predict(self, X: pd.DataFrame) -> np.array:
+        '''
+        Метод для кластеризации
+
+        Параметры
+        ---------
+        X : pd.DataFrame
+            Датасет с неразмеченными наблюдениями
+
+        Возвращаемое значение
+        ---------------------
+        res : np.array
+            Вектор кластеров для соответствующих наблюдений
+        '''
         pass
 
-    def fit_predict(self):
+    def fit_predict(self, X: pd.DataFrame) -> np.array:
+        '''
+        Объединенный метод для обучения -> кластеризации
+
+        Параметры
+        ---------
+        X : pd.DataFrame
+            Датасет с неразмеченными наблюдениями
+
+        Возвращаемое значение
+        ---------------------
+        res : np.array
+            Вектор кластеров для соответствующих наблюдений
+        '''
         pass
