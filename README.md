@@ -43,7 +43,7 @@ ml_algorithms/
 | 👥 Ленивые методы | ✅ KNNClassifier, ✅ KNNRegressor |
 | 🌲🌲 Ансамбли | ✅ RandomForestСlassifier, ✅ RandomForestRegressor |
 | 🧩 Снижение размерности | ✅ PCA, ⏳ t-SNE |
-| 🧲 Кластеризация | ⏳ k-Means |
+| 🧲 Кластеризация | ✅ K-Means |
 | 🚀 Градиентный бустинг | ⏳ GBM |
 | 🔧 Предобработка | ✅ StandardScaler, ✅ MinMaxScaler |
 
