@@ -4,12 +4,12 @@ from decision_tree import DecisionTreeRegressor
 
 class BaseGradientBoosting:
     def __init__(self,
-                 n_estimators: int = 100,
-                 learning_rate: float = 1e-1,
-                 max_depth: int = 3,
-                 min_samples_split: int = 2,
-                 min_samples_leaf: int = 1,
-                 random_state: int | None = None):
+                 n_estimators: int,
+                 learning_rate: float,
+                 max_depth: int,
+                 min_samples_split: int,
+                 min_samples_leaf: int,
+                 random_state: int | None):
         '''
         Инициализация гиперпараметров
         '''
@@ -97,8 +97,115 @@ class BaseGradientBoosting:
 
 
 class GradientBoostingClassifier(BaseGradientBoosting):
-    pass
+    def __init__(self,
+                 n_estimators: int = 100,
+                 learning_rate: float = 1e-1,
+                 max_depth: int = 3,
+                 min_samples_split: int = 2,
+                 min_samples_leaf: int = 1,
+                 random_state: int | None = None):
+        super().__init__(n_estimators,
+                         learning_rate,
+                         max_depth,
+                         min_samples_split,
+                         min_samples_leaf,
+                         random_state)
 
+    def _initial_prediction(self, y: np.array) -> None:
+        '''
+        Метод для инициализации исходного предикта
+
+        Параметры
+        ---------
+        y : np.array
+            Вектор таргет-значений датасета для обучения
+        '''
+
+        # Граница - эпсилон - для исключения логарифма от 0
+        eps: float = 1e-15
+
+        y_mean = np.clip(np.mean(y), a_min=eps, a_max=1-eps)
+
+        self.initial_pred = y_mean / (1 - y_mean)
+
+    def _sigmoid(self, pred: np.array) -> np.array:
+        '''
+        Возвращение вероятности отнесения к классу
+
+        Параметры
+        ---------
+        pred : pd.Series
+            Вектор текущих предиктов
+
+        Возвращаемое значение
+        ---------------------
+        np.array
+            Вероятности отнесения к
+            классу 0/1
+        '''
+        return 1 / (1 + np.exp(-pred))
+
+    def _compute_residuals(self, y, pred) -> np.array:
+        '''
+        Метод для расчета текущих значений residuals
+
+        Параметры
+        ---------
+        y : np.array
+            Вектор истинных меток класса
+        pred : np.array
+            Текущие значения предиктов
+
+        Возвращаемое значение
+        ---------------------
+        res : np.array
+            Вектор значений антиградиента функции ошибки
+            предыдущего ансамбля
+        '''
+
+        res = y - self._sigmoid(pred)
+
+        return res
+    
+    def predict_proba(self, X: pd.DataFrame) -> np.array:
+        '''
+        Метод для получения вероятностей предикта
+
+        Параметры
+        ---------
+        X : pd.DataFrame
+            Вектор наблюдений для которых выполняется предикт
+
+        Возвращаемое значение
+        ---------------------
+        raw : np.array
+            Вектор вероятностей отнесения к классу
+            в соответствии с каждым наблюдением датасета
+        '''
+
+        raw = self._sigmoid(self._raw_predict(X=X))
+
+        return raw
+
+    def predict(self, X: pd.DataFrame) -> np.array:
+        '''
+        Метод для получения предиктов класса
+
+        Параметры
+        ---------
+        X : pd.DataFrame
+            Датасет с наблюдениями
+
+        Возвращаемое значение
+        ---------------------
+        y_pred : np.array
+            Вектор предиктов классов для
+            соответствующих наблюдений
+        '''
+
+        y_pred = np.array([1 if value >= 0.5 else 0 for value in self.predict_proba(X=X)])
+
+        return y_pred
 
 class GradientBoostingRegressor(BaseGradientBoosting):
     pass
