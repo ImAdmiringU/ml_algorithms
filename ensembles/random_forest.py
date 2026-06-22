@@ -23,7 +23,6 @@ class BaseRandomForest:
         '''
         Список с отдельными экземплярами деревьев RF
         '''
-
         self.trees: list = list()
 
     def _bootstrap_sample(self, X: pd.DataFrame, y: pd.Series) -> tuple[pd.DataFrame, pd.Series]:
