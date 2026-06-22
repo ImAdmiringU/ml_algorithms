@@ -126,7 +126,7 @@ class GradientBoostingClassifier(BaseGradientBoosting):
 
         y_mean = np.clip(np.mean(y), a_min=eps, a_max=1-eps)
 
-        self.initial_pred = y_mean / (1 - y_mean)
+        self.initial_pred = np.log(y_mean / (1 - y_mean))
 
     def _sigmoid(self, pred: np.array) -> np.array:
         '''
