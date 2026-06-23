@@ -17,7 +17,8 @@ ml_algorithms/
 ├── base.py                   # Вспомогательные функции (entropy, mse, gain...)
 │
 ├── ensembles/                # Ансамблевые методы
-│   └── random_forest.py      # Random Forest (классификация + регрессия)
+│   ├── random_forest.py      # Random Forest (классификация + регрессия)
+│   └── gradient_boosting.py  # Gradient Boosting (классификация + регрессия)
 │
 ├── decomposition/            # Снижение размерности
 │   ├── pca.py                # Principal Component Analysis
@@ -44,7 +45,7 @@ ml_algorithms/
 | 🌲🌲 Ансамбли | ✅ RandomForestСlassifier, ✅ RandomForestRegressor |
 | 🧩 Снижение размерности | ✅ PCA, ⏳ t-SNE |
 | 🧲 Кластеризация | ✅ K-Means |
-| 🚀 Градиентный бустинг | ⏳ GBM |
+| 🚀 Градиентный бустинг | ✅ GBM |
 | 🔧 Предобработка | ✅ StandardScaler, ✅ MinMaxScaler |
 
 ---
