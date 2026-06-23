@@ -89,7 +89,7 @@ class BaseGradientBoosting:
     def _initial_prediction(self, y: np.array) -> None:
         raise NotImplementedError
     
-    def _compute_residuals(self, y: np.array, pred: np.array) -> np.array:
+    def _compute_residuals(self, y: pd.Series, pred: np.array) -> pd.Series:
         raise NotImplementedError
 
     def predict(self, X: pd.DataFrame) -> np.array:
@@ -145,20 +145,20 @@ class GradientBoostingClassifier(BaseGradientBoosting):
         '''
         return 1 / (1 + np.exp(-pred))
 
-    def _compute_residuals(self, y, pred) -> np.array:
+    def _compute_residuals(self, y: np.array, pred: np.array) -> pd.Series:
         '''
         Метод для расчета текущих значений residuals
 
         Параметры
         ---------
-        y : np.array
+        y : pd.Series
             Вектор истинных меток класса
         pred : np.array
             Текущие значения предиктов
 
         Возвращаемое значение
         ---------------------
-        res : np.array
+        res : pd.Series
             Вектор значений антиградиента функции ошибки
             предыдущего ансамбля
         '''
@@ -208,4 +208,69 @@ class GradientBoostingClassifier(BaseGradientBoosting):
         return y_pred
 
 class GradientBoostingRegressor(BaseGradientBoosting):
-    pass
+    def __init__(self,
+                 n_estimators: int = 100,
+                 learning_rate: float = 1e-1,
+                 max_depth: int = 3,
+                 min_samples_split: int = 2,
+                 min_samples_leaf: int = 1,
+                 random_state: int | None = None):
+        super().__init__(n_estimators,
+                         learning_rate,
+                         max_depth,
+                         min_samples_split, 
+                         min_samples_leaf,
+                         random_state)
+
+    def _initial_prediction(self, y: np.array) -> None:
+        '''
+        Метод для инициализации исходного предикта
+
+        Параметры
+        ---------
+        y : np.array
+            Вектор таргет-значений датасета для обучения
+        '''
+
+        self.initial_pred = np.mean(y)
+    
+    def _compute_residuals(self, y: pd.Series, pred: np.array) -> pd.Series:
+        '''
+        Метод для расчета текущих значений residuals
+
+        Параметры
+        ---------
+        y : pd.Series
+            Вектор истинных значений наблюдений
+        pred : np.array
+            Текущие значения предиктов
+
+        Возвращаемое значение
+        ---------------------
+        res : pd.Series
+            Вектор значений антиградиента функции ошибки
+            предыдущего ансамбля
+        '''
+
+        res = y - pred
+
+        return res
+    
+    def predict(self, X: pd.DataFrame) -> np.array:
+        '''
+        Метод для получения предиктов
+
+        Параметры
+        ---------
+        X : pd.DataFrame
+            Датасет с наблюдениями
+
+        Возвращаемое значение
+        ---------------------
+        y_pred : np.array
+            Вектор предиктов для соответствующих наблюдений
+        '''
+
+        y_pred = self._raw_predict(X=X)
+
+        return y_pred
