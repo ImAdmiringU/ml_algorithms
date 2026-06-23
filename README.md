@@ -22,7 +22,7 @@ ml_algorithms/
 │
 ├── decomposition/            # Снижение размерности
 │   ├── pca.py                # Principal Component Analysis
-│   └── tsne.py               # t-SNE
+│   └── tsne.py               # t-SNE (⏳)
 │
 ├── clustering/               # Кластеризация
 │   └── kmeans.py             # K-Means
@@ -45,7 +45,7 @@ ml_algorithms/
 | 🌲🌲 Ансамбли | ✅ RandomForestСlassifier, ✅ RandomForestRegressor |
 | 🧩 Снижение размерности | ✅ PCA, ⏳ t-SNE |
 | 🧲 Кластеризация | ✅ K-Means |
-| 🚀 Градиентный бустинг | ✅ GBM |
+| 🚀 Градиентный бустинг | ✅ GBСlassifier | ✅ GBRegressor |
 | 🔧 Предобработка | ✅ StandardScaler, ✅ MinMaxScaler |
 
 ---
