@@ -45,7 +45,7 @@ ml_algorithms/
 | 🌲🌲 Ансамбли | ✅ RandomForestСlassifier, ✅ RandomForestRegressor |
 | 🧩 Снижение размерности | ✅ PCA, ⏳ t-SNE |
 | 🧲 Кластеризация | ✅ K-Means |
-| 🚀 Градиентный бустинг | ✅ GBСlassifier | ✅ GBRegressor |
+| 🚀 Градиентный бустинг | ✅ GBСlassifier, ✅ GBRegressor |
 | 🔧 Предобработка | ✅ StandardScaler, ✅ MinMaxScaler |
 
 ---
